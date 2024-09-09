@@ -17,6 +17,8 @@ jobs:
       BUILD_ARTIFACTS: ${{ github.workspace }}/build
       MODULE_NAME: androidApp
       BUILD_VARIANT: release
+      JAVA_OPTS: "-Xms512m -Xmx2g -XX:MaxMetaspaceSize=512m"  # Increase Metaspace size for JVM
+      GRADLE_OPTS: "-Xms512m -Xmx2g -Dorg.gradle.daemon=false" # Additional memory for Gradle
 
     steps:
       # Checkout the code from GitHub repository
