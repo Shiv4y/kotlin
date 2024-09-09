@@ -1,40 +1,69 @@
-name: Build - Android App (macOS)
+name: Android Build
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   build:
+    name: Build
     runs-on: macos-latest
+
+    env:
+      BUILD_ARTIFACTS: ${{ github.workspace }}/build
+      MODULE_NAME: androidApp
+      BUILD_VARIANT: release
+
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Install build scripts (if needed) # Assuming you don't need these scripts, remove this step
-        # Add steps to install your build scripts here, if required
-
-      - name: Tag build (if needed) # Assuming you don't need tagging, remove this step
-        # Add steps to tag your build based on your needs, if required
-
-      - name: Gradle build
-        uses: gradle/gradle-action@v2
+      # Checkout the code from GitHub repository
+      - name: Checkout code
+        uses: actions/checkout@v3
         with:
-          tasks: clean :androidApp:assembleRelease
-          jdkArchitecture: x86
+          submodules: true
+          lfs: true
 
-      - name: Android Postprocess (if needed) # Assuming you don't need postprocessing, remove this step
-        # Add steps for any postprocessing steps you might have, if required
+      # Set up Java JDK
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '11'
 
-      - name: Upload build artifacts
+      # Install Gradle dependencies
+      - name: Install dependencies
+        run: ./gradlew dependencies
+
+      # Clean and build APK using Gradle
+      - name: Build APK
+        run: ./gradlew clean $MODULE_NAME:assemble$BUILD_VARIANT
+
+      # Copy the APK to the artifacts folder
+      - name: Copy APK to artifacts
+        run: |
+          mkdir -p $BUILD_ARTIFACTS
+          cp -r ${{ github.workspace }}/$MODULE_NAME/build/outputs/apk/$BUILD_VARIANT/*.apk $BUILD_ARTIFACTS/
+
+      # Copy mapping files (Proguard/R8) to artifacts folder
+      - name: Copy mapping files to artifacts
+        run: |
+          mkdir -p $BUILD_ARTIFACTS/mapping
+          cp -r ${{ github.workspace }}/$MODULE_NAME/build/outputs/mapping/$BUILD_VARIANT/mapping.txt $BUILD_ARTIFACTS/mapping/
+
+      # Upload APK as GitHub Actions artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v3
         with:
-          name: android-app
-          path: ${{ github.workspace }}/androidApp/build/outputs/apk/**/*.apk
+          name: android-apk
+          path: $BUILD_ARTIFACTS/*.apk
 
-**Notes:**
-
-* This workflow assumes you don't need the functionality provided by the App Center scripts you were previously using. If you do, you'll need to find alternatives or implement them yourself within the workflow.
-* The comments within the steps indicate sections that might be unnecessary depending on your project's requirements. If you don't need tagging or postprocessing, you can remove those steps entirely.
-* The upload step uses the `actions/upload-artifact` action to store the built APKs within your GitHub repository as an artifact. This allows you to download them later if needed.
-
-Remember to adjust the paths and steps based on your specific project structure and build needs.
+      # Upload Proguard/R8 mapping files as artifact
+      - name: Upload mapping files
+        if: success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-mapping
+          path: $BUILD_ARTIFACTS/mapping/mapping.txt
