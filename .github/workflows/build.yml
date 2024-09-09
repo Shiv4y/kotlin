@@ -17,8 +17,8 @@ jobs:
       BUILD_ARTIFACTS: ${{ github.workspace }}/build
       MODULE_NAME: androidApp
       BUILD_VARIANT: release
-      JAVA_OPTS: "-Xms512m -Xmx2g -XX:MaxMetaspaceSize=512m"  # Increase Metaspace size for JVM
-      GRADLE_OPTS: "-Xms512m -Xmx2g -Dorg.gradle.daemon=false" # Additional memory for Gradle
+      JAVA_OPTS: "-Xms512m -Xmx2g -XX:MaxMetaspaceSize=512m"
+      GRADLE_OPTS: "-Xms512m -Xmx2g -Dorg.gradle.daemon=false"
 
     steps:
       # Checkout the code from GitHub repository
@@ -49,11 +49,13 @@ jobs:
           mkdir -p $BUILD_ARTIFACTS
           cp -r ${{ github.workspace }}/$MODULE_NAME/build/outputs/apk/$BUILD_VARIANT/*.apk $BUILD_ARTIFACTS/
 
-      # Copy mapping files (Proguard/R8) to artifacts folder
+      # Copy mapping files (Proguard/R8) to artifacts folder (only if it exists)
       - name: Copy mapping files to artifacts
         run: |
-          mkdir -p $BUILD_ARTIFACTS/mapping
-          cp -r ${{ github.workspace }}/$MODULE_NAME/build/outputs/mapping/$BUILD_VARIANT/mapping.txt $BUILD_ARTIFACTS/mapping/
+          if [ -f ${{ github.workspace }}/$MODULE_NAME/build/outputs/mapping/$BUILD_VARIANT/mapping.txt ]; then
+            mkdir -p $BUILD_ARTIFACTS/mapping
+            cp -r ${{ github.workspace }}/$MODULE_NAME/build/outputs/mapping/$BUILD_VARIANT/mapping.txt $BUILD_ARTIFACTS/mapping/
+          fi
 
       # Upload APK as GitHub Actions artifact
       - name: Upload APK
@@ -62,7 +64,7 @@ jobs:
           name: android-apk
           path: $BUILD_ARTIFACTS/*.apk
 
-      # Upload Proguard/R8 mapping files as artifact
+      # Upload Proguard/R8 mapping files as artifact (only if they exist)
       - name: Upload mapping files
         if: success()
         uses: actions/upload-artifact@v3
