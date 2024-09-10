@@ -32,11 +32,16 @@ jobs:
           distribution: 'zulu'
           java-version: '11'
 
+      # Enable ProGuard/R8 via Gradle properties or environment variable
+      - name: Enable ProGuard/R8
+        run: |
+          echo "minifyEnabled=true" >> $MODULE_NAME/build.gradle
+
       # Install Gradle dependencies
       - name: Install dependencies
         run: ./gradlew dependencies
 
-      # Clean and build APK using Gradle
+      # Clean and build APK using Gradle with ProGuard/R8 enabled
       - name: Build APK
         run: ./gradlew clean $MODULE_NAME:assemble$BUILD_VARIANT -PenableProguard=true
 
@@ -54,7 +59,11 @@ jobs:
       - name: Copy Mapping files to artifacts
         run: |
           mkdir -p $BUILD_ARTIFACTS/mapping
-          cp -r ${{ github.workspace }}/$MODULE_NAME/build/outputs/mapping/$BUILD_VARIANT/mapping.txt $BUILD_ARTIFACTS/mapping/
+          if [ -f ${{ github.workspace }}/$MODULE_NAME/build/outputs/mapping/$BUILD_VARIANT/mapping.txt ]; then
+            cp ${{ github.workspace }}/$MODULE_NAME/build/outputs/mapping/$BUILD_VARIANT/mapping.txt $BUILD_ARTIFACTS/mapping/
+          else
+            echo "No mapping file found. Skipping..."
+          fi
 
       # Upload APK as GitHub Actions artifact
       - name: Upload APK
