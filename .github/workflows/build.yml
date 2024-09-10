@@ -32,11 +32,6 @@ jobs:
           distribution: 'zulu'
           java-version: '11'
 
-      # Enable ProGuard/R8 via Gradle properties or environment variable
-      - name: Enable ProGuard/R8
-        run: |
-          echo "minifyEnabled=true" >> $MODULE_NAME/build.gradle
-
       # Install Gradle dependencies
       - name: Install dependencies
         run: ./gradlew dependencies
