@@ -40,19 +40,32 @@ jobs:
       - name: Build APK
         run: ./gradlew clean $MODULE_NAME:assemble$BUILD_VARIANT -PenableProguard=true
 
-      # Debug: List APK files
+      # List APK files for debugging
       - name: List APK files
         run: ls -R ${{ github.workspace }}/$MODULE_NAME/build/outputs/apk/$BUILD_VARIANT
 
-      # Copy APK to the artifacts folder (make sure the path is correct)
+      # Copy APK files to build artifacts directory
       - name: Copy APK to artifacts
         run: |
           mkdir -p $BUILD_ARTIFACTS
           cp -r ${{ github.workspace }}/$MODULE_NAME/build/outputs/apk/$BUILD_VARIANT/*.apk $BUILD_ARTIFACTS/
 
-      # Upload APK as GitHub Actions artifact (Node.js 20 compatible)
+      # Copy Mapping files to build artifacts directory (if ProGuard is enabled)
+      - name: Copy Mapping files to artifacts
+        run: |
+          mkdir -p $BUILD_ARTIFACTS/mapping
+          cp -r ${{ github.workspace }}/$MODULE_NAME/build/outputs/mapping/$BUILD_VARIANT/mapping.txt $BUILD_ARTIFACTS/mapping/
+
+      # Upload APK as GitHub Actions artifact
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
           path: $BUILD_ARTIFACTS/*.apk
+
+      # Upload Mapping as GitHub Actions artifact (if ProGuard is enabled)
+      - name: Upload Mapping
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-mapping
+          path: $BUILD_ARTIFACTS/mapping/mapping.txt
