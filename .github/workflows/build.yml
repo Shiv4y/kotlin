@@ -14,7 +14,6 @@ jobs:
     runs-on: macos-latest
 
     env:
-      BUILD_ARTIFACTS: ${{ github.workspace }}/build
       MODULE_NAME: androidApp
       BUILD_VARIANT: release
       JAVA_OPTS: "-Xms512m -Xmx2g -XX:MaxMetaspaceSize=512m"
@@ -44,32 +43,32 @@ jobs:
       - name: List APK files
         run: ls -R /Users/runner/work/kotlin/kotlin/$MODULE_NAME/build/outputs/apk/$BUILD_VARIANT
 
-      # Copy APK files to build artifacts directory
+      # Copy APK files to build artifacts directory (hardcoded path)
       - name: Copy APK to artifacts
         run: |
-          mkdir -p $BUILD_ARTIFACTS
-          cp /Users/runner/work/kotlin/kotlin/$MODULE_NAME/build/outputs/apk/$BUILD_VARIANT/*.apk $BUILD_ARTIFACTS/
+          mkdir -p /Users/runner/work/kotlin/kotlin/build
+          cp /Users/runner/work/kotlin/kotlin/$MODULE_NAME/build/outputs/apk/$BUILD_VARIANT/*.apk /Users/runner/work/kotlin/kotlin/build/
 
-      # Copy Mapping files to build artifacts directory (if ProGuard is enabled)
+      # Copy Mapping files to build artifacts directory (if ProGuard is enabled, hardcoded path)
       - name: Copy Mapping files to artifacts
         run: |
-          mkdir -p $BUILD_ARTIFACTS/mapping
+          mkdir -p /Users/runner/work/kotlin/kotlin/build/mapping
           if [ -f /Users/runner/work/kotlin/kotlin/$MODULE_NAME/build/outputs/mapping/$BUILD_VARIANT/mapping.txt ]; then
-            cp /Users/runner/work/kotlin/kotlin/$MODULE_NAME/build/outputs/mapping/$BUILD_VARIANT/mapping.txt $BUILD_ARTIFACTS/mapping/
+            cp /Users/runner/work/kotlin/kotlin/$MODULE_NAME/build/outputs/mapping/$BUILD_VARIANT/mapping.txt /Users/runner/work/kotlin/kotlin/build/mapping/
           else
             echo "No mapping file found. Skipping..."
           fi
 
-      # Upload APK as GitHub Actions artifact
+      # Upload APK as GitHub Actions artifact (hardcoded path)
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: $BUILD_ARTIFACTS/*.apk
+          path: /Users/runner/work/kotlin/kotlin/build/*.apk
 
-      # Upload Mapping as GitHub Actions artifact (if ProGuard is enabled)
+      # Upload Mapping as GitHub Actions artifact (hardcoded path)
       - name: Upload Mapping
         uses: actions/upload-artifact@v4
         with:
           name: android-mapping
-          path: $BUILD_ARTIFACTS/mapping/mapping.txt
+          path: /Users/runner/work/kotlin/kotlin/build/mapping/mapping.txt
