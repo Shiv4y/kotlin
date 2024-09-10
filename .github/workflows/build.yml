@@ -21,11 +21,11 @@ jobs:
       GRADLE_OPTS: "-Xms512m -Xmx2g -Dorg.gradle.daemon=false"
 
     steps:
-      # Checkout the code from GitHub repository (Node.js 20 compatible)
+      # Checkout the code from GitHub repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Set up Java JDK (Node.js 20 compatible)
+      # Set up Java JDK
       - name: Set up JDK 11
         uses: actions/setup-java@v4
         with:
@@ -42,20 +42,20 @@ jobs:
 
       # List APK files for debugging
       - name: List APK files
-        run: ls -R ${{ github.workspace }}/$MODULE_NAME/build/outputs/apk/$BUILD_VARIANT
+        run: ls -R /Users/runner/work/kotlin/kotlin/$MODULE_NAME/build/outputs/apk/$BUILD_VARIANT
 
       # Copy APK files to build artifacts directory
       - name: Copy APK to artifacts
         run: |
           mkdir -p $BUILD_ARTIFACTS
-          cp -r ${{ github.workspace }}/$MODULE_NAME/build/outputs/apk/$BUILD_VARIANT/*.apk $BUILD_ARTIFACTS/
+          cp /Users/runner/work/kotlin/kotlin/$MODULE_NAME/build/outputs/apk/$BUILD_VARIANT/*.apk $BUILD_ARTIFACTS/
 
       # Copy Mapping files to build artifacts directory (if ProGuard is enabled)
       - name: Copy Mapping files to artifacts
         run: |
           mkdir -p $BUILD_ARTIFACTS/mapping
-          if [ -f ${{ github.workspace }}/$MODULE_NAME/build/outputs/mapping/$BUILD_VARIANT/mapping.txt ]; then
-            cp ${{ github.workspace }}/$MODULE_NAME/build/outputs/mapping/$BUILD_VARIANT/mapping.txt $BUILD_ARTIFACTS/mapping/
+          if [ -f /Users/runner/work/kotlin/kotlin/$MODULE_NAME/build/outputs/mapping/$BUILD_VARIANT/mapping.txt ]; then
+            cp /Users/runner/work/kotlin/kotlin/$MODULE_NAME/build/outputs/mapping/$BUILD_VARIANT/mapping.txt $BUILD_ARTIFACTS/mapping/
           else
             echo "No mapping file found. Skipping..."
           fi
